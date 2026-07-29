@@ -39,7 +39,7 @@ PAYLOAD_TOKEN= {
     "client_secret" : CLIENT_SECRET
 }
 TOKEN_FILE="token.json"
-etape("Récupération du Token...")
+etape("Récupération du Token")
 
  # Vérifier si un token existe déjà
 if os.path.exists(TOKEN_FILE):
@@ -131,7 +131,7 @@ NDVI_BODY={
     "evalscript": evalscript
 }
 
-etape("Récupération du TIF NDVI sur Aix...")
+etape("Récupération du TIF NDVI sur Aix")
 
 response = session.post(
     URL_GET_IMAGE, 
@@ -151,7 +151,7 @@ ok()
 
 
 # LST
-evalscript=util.chargerEvalscript("temp")
+evalscript=util.chargerEvalscript("lst")
 LST_BODY = {
     "input": {
         "bounds": {
@@ -167,17 +167,16 @@ LST_BODY = {
                 "type": "sentinel-3-slstr-l2",
                 "dataFilter": {
                     "timeRange": {
-                        "from": "2026-07-28T00:00:00Z",
-                        "to": "2026-07-28T23:59:59Z"
+                        "from": "2026-07-28T09:00:00Z",
+                        "to": "2026-07-28T09:59:59Z"
                     }
-                },
-                "mosaickingOrder": "mostRecent"
+                }
             }
         ]
     },
     "output": {
-        "width": 1024,
-        "height": 1024,
+        "width": 20,
+        "height": 20,
         "responses": [
             {
                 "identifier": "default",
@@ -190,7 +189,7 @@ LST_BODY = {
     "evalscript": evalscript
 }
 
-etape("Récupération du TIF LST sur Aix...")
+etape("Récupération du TIF LST sur Aix")
 
 response = session.post(
     URL_GET_IMAGE, 
@@ -211,7 +210,7 @@ ok()
 
 
 #==========TELECHARGEMENT IMAGE RESULTAT==========
-etape("Téléchargement des images...")
+etape("Téléchargement des images")
 
 if not os.path.exists("image/NDVI.tif"):
     util.telechargerImage(ndvi, "NDVI")
@@ -225,7 +224,7 @@ ok()
 
 #==========TRAITEMENT DE LA DONNEE==========
 data = []
-etape("Récupération de l'image NDVI...")
+etape("Récupération de l'image NDVI")
 
 with rasterio.open("image/NDVI.tif") as src:
     ndvi = src.read(1)
@@ -233,7 +232,7 @@ with rasterio.open("image/NDVI.tif") as src:
 ok()
 
 name = "AIX"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x = 400
 y = 400
@@ -245,7 +244,7 @@ data.append(aixGlobal)
 ok()
 
 name = "JasDeBouffan"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x=420
 y=450
@@ -258,7 +257,7 @@ data.append(jasDeBouffan)
 ok()
 
 name="ParcDeLaTorse"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x=660
 y=460
@@ -271,7 +270,7 @@ data.append(torse)
 ok()
 
 name="CentreHistorique"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x=550
 y=450
@@ -292,7 +291,7 @@ with rasterio.open("image/LST.tif") as src:
 ok()
 
 name = "AIX"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x = 400
 y = 400
@@ -304,7 +303,7 @@ data.append(aixGlobal)
 ok()
 
 name = "JasDeBouffan"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x=420
 y=450
@@ -317,7 +316,7 @@ data.append(jasDeBouffan)
 ok()
 
 name="ParcDeLaTorse"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x=660
 y=460
@@ -330,7 +329,7 @@ data.append(torse)
 ok()
 
 name="CentreHistorique"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x=550
 y=450
@@ -364,24 +363,11 @@ if reponse.upper() == "Y":
         elt.genererPNG(elt.nom)
         ok()
 
-with rasterio.open("image/LST.tif") as src:
-    tab2D = src.read(1)
-
-test = img.LST(tab2D, "TEST", 0, 0, 1024, 1024)
-
 
 with rasterio.open("image/LST.tif") as src:
-    print(src.profile)
-    print(src.dtypes)
-    print(src.count)
-    print(src.tags())
-    tab = src.read(1)
+    lst = src.read(1)
 
-print(tab[:5, :5])
-print("Min :", np.nanmin(tab))
-print("Max :", np.nanmax(tab))
-print("Moyenne :", np.nanmean(tab))
-
-print("Nombre de valeurs différentes :", len(np.unique(tab)))
+print(np.nanmax(lst))
+print(np.nanmin(lst))
 
 print("Exécution terminée, temps total: ", time.time()-debut, " secondes.")
