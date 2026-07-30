@@ -1,6 +1,7 @@
 import math
 import rasterio
 import numpy as np
+from pathlib import Path
 
 
 
@@ -100,3 +101,13 @@ def chargerEvalscript(nom):
 def telechargerImage(content, nom):
     with open(f"image/{nom}.tif", "wb") as f:
         f.write(content)
+
+
+def supprimer_tif(dossier="./image"):
+    dossier = Path(dossier)
+
+    for fichier in dossier.glob("*.tif"):
+        fichier.unlink()
+
+    for fichier in dossier.glob("*.tiff"):
+        fichier.unlink()

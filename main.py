@@ -18,7 +18,9 @@ clear()
 load_dotenv()
 
 
+DOSSIER = "./image"
 
+util.supprimer_tif(DOSSIER)
 
 #==========VARIABLES==========
 source = "NDVI.tif"
@@ -175,8 +177,8 @@ LST_BODY = {
         ]
     },
     "output": {
-        "width": 20,
-        "height": 20,
+        "width": 1024,
+        "height": 1024,
         "responses": [
             {
                 "identifier": "default",
@@ -203,6 +205,10 @@ if response.status_code != 200:
     exit(response.status_code)
 
 lst=response.content
+
+print(response.status_code)
+print(hash(evalscript))
+print(response.request.body.decode() if isinstance(response.request.body, bytes) else response.request.body)
 
 ok()
 

@@ -12,6 +12,6 @@ function setup() {
 
 function evaluatePixel(sample) {
   return [
-    sample.LST
+    sample.LST - 273.15
   ];
 }
