@@ -1,0 +1,36 @@
+{
+    "input": {
+        "bounds": {
+        "bbox": [
+            5.30,
+            43.45,
+            5.55,
+            43.60
+        ]
+        },
+        "data": [
+        {
+            "type": "sentinel-2-l2a",
+            "dataFilter": {
+            "timeRange": {
+                "from": "2024-06-01T00:00:00Z",
+                "to": "2024-06-10T23:59:59Z"
+            },
+            "mosaickingOrder":"leastCC"
+            }
+        }
+        ]
+    },
+    "output": {
+        "width": 1024,
+        "height": 1024,
+        "responses": [
+        {
+            "identifier": "default",
+            "format": {
+            "type": "image/tiff"
+            }
+        }
+        ]
+    }
+}
