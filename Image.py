@@ -40,7 +40,9 @@ class ImageDonnee:
         self.Q3 = 0
 
         self.calculerQuartiles()
-
+        self.valeursDifferentes = self.calculerValeursDifferentes()
+        self.variance_spatiale = self.calculerVarianceSpatiale()
+        self.tauxRepetition = 1-self.variance_spatiale
 
     def calculerMoyenne(self):
         if self.effectif <= 0:
@@ -103,6 +105,9 @@ class ImageDonnee:
         print("Q3 :", self.Q3)
         print("Minimum :", self.tabSorted[0])
         print("Maximum :", self.tabSorted[-1])
+        print("Nombre de valeurs différentes :", self.valeursDifferentes)
+        print("Indice d'hétérogénéité spatiale :", self.variance_spatiale)
+        print("Taux de répétition :", self.tauxRepetition)
 
         print("\n")
 
@@ -158,6 +163,24 @@ class ImageDonnee:
 
         plt.close()
 
+    def calculerVarianceSpatiale(self):
+        """
+        Calcule un indicateur de diversité spatiale.
+
+        Retour :
+            float compris entre 0 et 1.
+        """
+
+        if self.effectif <= 0:
+            raise ValueError("Effectif nul")
+
+        return self.valeursDifferentes / self.effectif
+
+    def calculerValeursDifferentes(self):
+        if self.effectif <= 0:
+            raise ValueError("Effectif nul")
+
+        return len(set(self.tab1D))
 
 
 class NDVI(ImageDonnee):

@@ -9,6 +9,7 @@ import time
 import util
 from debug import *
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 #==========INITIALISATION==========
@@ -91,9 +92,9 @@ HEADER={
     "Accept" : "image/tiff"
 }
 session.headers.update(HEADER)
+URL_GET_IMAGE="https://sh.dataspace.copernicus.eu/api/v1/process"
 
 # NDVI
-URL_GET_IMAGE="https://sh.dataspace.copernicus.eu/api/v1/process"
 SCRIPT_NAME = "ndviSent3"
 evalscript = util.chargerEvalscript(SCRIPT_NAME)
 REQUEST_NAME = "ndviSent3"
@@ -140,10 +141,6 @@ if response.status_code != 200:
     exit(response.status_code)
 
 lst=response.content
-
-print(response.status_code)
-print(hash(evalscript))
-print(response.request.body.decode() if isinstance(response.request.body, bytes) else response.request.body)
 
 ok()
 
@@ -378,10 +375,39 @@ reponse = ""
 reponse = input("Voulez-vous générer des courbes de tendance ? [Y/n]")
 if reponse.upper() == "Y":
     for (name, tab) in DATA.items():
+        etape(f"Génération de la courbe de tendance de {name}")
         util.genererRegressionPNG(
             tab[0].tab2D,
             tab[1].tab2D,
             f"{name}_regression.png"
         )
+
+        ok()
+
+reponse = ""
+reponse = input("Voulez-vous afficher le nuage de points global ? [Y/n]")
+if reponse.upper() == "Y":
+    etape("Affichage du nuage de points global")
+    ndvi = img.NDVI(ndvi, "GLOBAL NDVI", 0, 0, 1024, 1024)
+    lst = img.LST(lst, "GLOBAL LST", 0, 0, 1024, 1024)
+
+    plt.xlim(
+        min(ndvi.tab1D),
+        max(ndvi.tab1D)
+    )
+
+    plt.scatter(
+        ndvi.tab1D,
+        lst.tab1D
+    )
+
+    plt.xlabel("NDVI")
+    plt.ylabel("LST °C")
+
+    plt.grid()
+    plt.show()
+
+    ok()
+
 
 print("Exécution terminée, temps total: ", time.time()-debut, " secondes.")
