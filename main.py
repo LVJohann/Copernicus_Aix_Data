@@ -9,6 +9,7 @@ import time
 import util
 from debug import *
 from dotenv import load_dotenv
+import matplotlib.pyplot as plt
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 #==========INITIALISATION==========
@@ -18,7 +19,9 @@ clear()
 load_dotenv()
 
 
+DOSSIER = "./image"
 
+util.supprimer_tif(DOSSIER)
 
 #==========VARIABLES==========
 source = "NDVI.tif"
@@ -39,7 +42,7 @@ PAYLOAD_TOKEN= {
     "client_secret" : CLIENT_SECRET
 }
 TOKEN_FILE="token.json"
-etape("Récupération du Token...")
+etape("Récupération du Token")
 
  # Vérifier si un token existe déjà
 if os.path.exists(TOKEN_FILE):
@@ -89,54 +92,21 @@ HEADER={
     "Accept" : "image/tiff"
 }
 session.headers.update(HEADER)
+URL_GET_IMAGE="https://sh.dataspace.copernicus.eu/api/v1/process"
 
 # NDVI
-URL_GET_IMAGE="https://sh.dataspace.copernicus.eu/api/v1/process"
-evalscript = util.chargerEvalscript("ndvi")
-NDVI_BODY={
-    "input": {
-        "bounds": {
-        "bbox": [
-            5.30,
-            43.45,
-            5.55,
-            43.60
-        ]
-        },
-        "data": [
-        {
-            "type": "sentinel-2-l2a",
-            "dataFilter": {
-            "timeRange": {
-                "from": "2024-06-01T00:00:00Z",
-                "to": "2024-06-10T23:59:59Z"
-            },
-            "mosaickingOrder":"leastCC"
-            }
-        }
-        ]
-    },
-    "output": {
-        "width": 1024,
-        "height": 1024,
-        "responses": [
-        {
-            "identifier": "default",
-            "format": {
-            "type": "image/tiff"
-            }
-        }
-        ]
-    },
-    "evalscript": evalscript
-}
+SCRIPT_NAME = "ndviSent3"
+evalscript = util.chargerEvalscript(SCRIPT_NAME)
+REQUEST_NAME = "ndviSent3"
+NDVI_BODY=util.chargerRequete(REQUEST_NAME)
+NDVI_BODY["evalscript"] = evalscript
 
-etape("Récupération du TIF NDVI sur Aix...")
+etape("Récupération du TIF NDVI sur Aix")
 
 response = session.post(
     URL_GET_IMAGE, 
     json=NDVI_BODY,
-    timeout=20
+    timeout=300
 )
 
 if response.status_code != 200:
@@ -151,46 +121,13 @@ ok()
 
 
 # LST
-evalscript=util.chargerEvalscript("temp")
-LST_BODY = {
-    "input": {
-        "bounds": {
-            "bbox": [
-                5.30,
-                43.45,
-                5.55,
-                43.60
-            ]
-        },
-        "data": [
-            {
-                "type": "sentinel-3-slstr-l2",
-                "dataFilter": {
-                    "timeRange": {
-                        "from": "2026-07-28T00:00:00Z",
-                        "to": "2026-07-28T23:59:59Z"
-                    }
-                },
-                "mosaickingOrder": "mostRecent"
-            }
-        ]
-    },
-    "output": {
-        "width": 1024,
-        "height": 1024,
-        "responses": [
-            {
-                "identifier": "default",
-                "format": {
-                    "type": "image/tiff"
-                }
-            }
-        ]
-    },
-    "evalscript": evalscript
-}
+SCRIPT_NAME = "lstSent3"
+evalscript=util.chargerEvalscript(SCRIPT_NAME)
+REQUEST_NAME = "lstSent3"
+LST_BODY = util.chargerRequete(REQUEST_NAME)
+LST_BODY["evalscript"] = evalscript
 
-etape("Récupération du TIF LST sur Aix...")
+etape("Récupération du TIF LST sur Aix")
 
 response = session.post(
     URL_GET_IMAGE, 
@@ -211,7 +148,7 @@ ok()
 
 
 #==========TELECHARGEMENT IMAGE RESULTAT==========
-etape("Téléchargement des images...")
+etape("Téléchargement des images")
 
 if not os.path.exists("image/NDVI.tif"):
     util.telechargerImage(ndvi, "NDVI")
@@ -225,7 +162,7 @@ ok()
 
 #==========TRAITEMENT DE LA DONNEE==========
 data = []
-etape("Récupération de l'image NDVI...")
+etape("Récupération de l'image NDVI")
 
 with rasterio.open("image/NDVI.tif") as src:
     ndvi = src.read(1)
@@ -233,7 +170,7 @@ with rasterio.open("image/NDVI.tif") as src:
 ok()
 
 name = "AIX"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x = 400
 y = 400
@@ -241,43 +178,47 @@ width = 750-x
 height = 670-y
 aixGlobal = img.NDVI(ndvi, name, x, y, width, height)
 data.append(aixGlobal)
+AIX = [aixGlobal]
 
 ok()
 
 name = "JasDeBouffan"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x=420
 y=450
 width = 575-x
 height = 562-y
 jasDeBouffan = img.NDVI(ndvi, name, x, y, width, height)
+JAS = [jasDeBouffan]
 
 data.append(jasDeBouffan)
 
 ok()
 
 name="ParcDeLaTorse"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x=660
 y=460
 width=695-x
 height=560-y
 torse = img.NDVI(ndvi, name, x, y, width, height)
+TORSE = [torse]
 
 data.append(torse)
 
 ok()
 
 name="CentreHistorique"
-etape(f"Traitement des données NDVI à {name}...")
+etape(f"Traitement des données NDVI à {name}")
 
 x=550
 y=450
 width=650-x
 height=525-y
 centreHistorique = img.NDVI(ndvi, name, x, y, width, height)
+CENTRE = [centreHistorique]
 
 data.append(centreHistorique)
 
@@ -292,7 +233,7 @@ with rasterio.open("image/LST.tif") as src:
 ok()
 
 name = "AIX"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x = 400
 y = 400
@@ -300,49 +241,59 @@ width = 750-x
 height = 670-y
 aixGlobal = img.LST(lst, name, x, y, width, height)
 data.append(aixGlobal)
+AIX.append(aixGlobal)
 
 ok()
 
 name = "JasDeBouffan"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x=420
 y=450
 width = 575-x
 height = 562-y
 jasDeBouffan = img.LST(lst, name, x, y, width, height)
+JAS.append(jasDeBouffan)
 
 data.append(jasDeBouffan)
 
 ok()
 
 name="ParcDeLaTorse"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x=660
 y=460
 width=695-x
 height=560-y
 torse = img.LST(lst, name, x, y, width, height)
+TORSE.append(torse)
 
 data.append(torse)
 
 ok()
 
 name="CentreHistorique"
-etape(f"Traitement des données LST à {name}...")
+etape(f"Traitement des données LST à {name}")
 
 x=550
 y=450
 width=650-x
 height=525-y
 centreHistorique = img.LST(lst, name, x, y, width, height)
+CENTRE.append(centreHistorique)
 
 data.append(centreHistorique)
 
 ok()
 
 
+DATA = {
+    "Aix_Global" : AIX,
+    "Torse" : TORSE,
+    "Jas de Bouffan" : JAS,
+    "Centre historique" : CENTRE
+}
 
 
 
@@ -364,24 +315,99 @@ if reponse.upper() == "Y":
         elt.genererPNG(elt.nom)
         ok()
 
-with rasterio.open("image/LST.tif") as src:
-    tab2D = src.read(1)
 
-test = img.LST(tab2D, "TEST", 0, 0, 1024, 1024)
+#==========CORRELATION==========
+reponse = ""
+reponse = input("Voulez-vous afficher les données de corrélation ? [Y/n]")
+if reponse.upper() == "Y":
+    SEUILS_NDVI = [
+        0.32,
+        0.35,
+        0.38,
+        0.40
+    ]
+    SEUILS_LST = [30, 32, 34, 36, 38, 40, 42]
+
+    for seuil_ndvi in SEUILS_NDVI:
+
+        for seuil_lst in SEUILS_LST:
+
+            print(
+                f"\n===== NDVI < {seuil_ndvi} => LST > {seuil_lst}°C =====\n"
+            )
 
 
-with rasterio.open("image/LST.tif") as src:
-    print(src.profile)
-    print(src.dtypes)
-    print(src.count)
-    print(src.tags())
-    tab = src.read(1)
+            for name, tab in DATA.items():
 
-print(tab[:5, :5])
-print("Min :", np.nanmin(tab))
-print("Max :", np.nanmax(tab))
-print("Moyenne :", np.nanmean(tab))
+                try:
 
-print("Nombre de valeurs différentes :", len(np.unique(tab)))
+                    correlation = util.correlation(
+                        tab[0],
+                        tab[1]
+                    )
+
+                    resultat = util.calculerRegle(
+                        tab[0].tab2D,
+                        tab[1].tab2D,
+                        seuil_ndvi,
+                        seuil_lst
+                    )
+
+
+                    print(
+                        f"{name:<22}"
+                        f"Corr={correlation:6.3f} "
+                        f"Conf={resultat.confiance:6.3f} "
+                        f"Lift={resultat.lift:6.3f} "
+                        f"Support={resultat.support:6.3f}"
+                    )
+
+
+                except ValueError as e:
+
+                    print(
+                        f"{name:<22}"
+                        f"Impossible ({e})"
+                    )
+
+
+reponse = ""
+reponse = input("Voulez-vous générer des courbes de tendance ? [Y/n]")
+if reponse.upper() == "Y":
+    for (name, tab) in DATA.items():
+        etape(f"Génération de la courbe de tendance de {name}")
+        util.genererRegressionPNG(
+            tab[0].tab2D,
+            tab[1].tab2D,
+            f"{name}_regression.png"
+        )
+
+        ok()
+
+reponse = ""
+reponse = input("Voulez-vous afficher le nuage de points global ? [Y/n]")
+if reponse.upper() == "Y":
+    etape("Affichage du nuage de points global")
+    ndvi = img.NDVI(ndvi, "GLOBAL NDVI", 0, 0, 1024, 1024)
+    lst = img.LST(lst, "GLOBAL LST", 0, 0, 1024, 1024)
+
+    plt.xlim(
+        min(ndvi.tab1D),
+        max(ndvi.tab1D)
+    )
+
+    plt.scatter(
+        ndvi.tab1D,
+        lst.tab1D
+    )
+
+    plt.xlabel("NDVI")
+    plt.ylabel("LST °C")
+
+    plt.grid()
+    plt.show()
+
+    ok()
+
 
 print("Exécution terminée, temps total: ", time.time()-debut, " secondes.")

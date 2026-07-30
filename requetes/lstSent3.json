@@ -1,0 +1,35 @@
+{
+    "input": {
+        "bounds": {
+            "bbox": [
+                5.30,
+                43.45,
+                5.55,
+                43.60
+            ]
+        },
+        "data": [
+            {
+                "type": "sentinel-3-slstr-l2",
+                "dataFilter": {
+                    "timeRange": {
+                        "from": "2026-07-28T09:00:00Z",
+                        "to": "2026-07-28T09:59:59Z"
+                    }
+                }
+            }
+        ]
+    },
+    "output": {
+        "width": 1024,
+        "height": 1024,
+        "responses": [
+            {
+                "identifier": "default",
+                "format": {
+                    "type": "image/tiff"
+                }
+            }
+        ]
+    }
+}
