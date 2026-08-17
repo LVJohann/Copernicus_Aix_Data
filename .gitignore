@@ -1,0 +1,7 @@
+output/image/lst/*.png
+output/image/ndvi/*.png
+output/regression/*.png
+image/*.tif
+__pycache__
+.env
+token.json

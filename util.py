@@ -1,11 +1,10 @@
-import math
 import rasterio
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 import json
 
-from Image import ImageDonnee
+from ImageCop import ImageDonnee
 
 
 def moyenneAri1D(tableau)->float:

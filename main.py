@@ -3,7 +3,7 @@ import numpy as np
 import json
 import rasterio
 import os
-import Image as img
+import ImageCop as img
 import requests
 import time
 import util

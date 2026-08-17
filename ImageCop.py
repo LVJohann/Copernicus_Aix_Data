@@ -1,5 +1,4 @@
 import math
-import util
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,6 +6,7 @@ import matplotlib.pyplot as plt
 class ImageDonnee:
 
     def __init__(self, tab2DIni, nom, x, y, largeur, hauteur, source, type_donnee):
+        import util
         self.nom = nom + "_" + type_donnee
         self.x = x
         self.y = y
@@ -187,6 +187,7 @@ class NDVI(ImageDonnee):
 
     def __init__(self, tab2DIni, nom, x, y, largeur, hauteur,
                  source="image/NDVI.tif"):
+        import util
 
         super().__init__(
             tab2DIni,
