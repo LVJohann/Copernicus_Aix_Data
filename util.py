@@ -7,58 +7,24 @@ import json
 from ImageCop import ImageDonnee
 
 
-def moyenneAri1D(tableau)->float:
-    """
-        Renvoie la moyenne des valeurs du tableau 1D passé en entrée.\n
-        :param float[] tableau: tableau 1D de réels
-        :returns: La moyenne des valeurs de ce tableau
-        :rtype: float
-    """
-    somme = 0
-    n = 0
-
-    for elt in tableau:
-        somme += elt
-        n += 1
-
-    return somme/n if n else 0    
-
-
-def moyenneAri2D(tableau)->float:
-    """
-        Renvoie la moyenne des valeurs du tableau 2D passé en entrée.\n
-        :param float[][] tableau: tableau 2D de réels
-        :returns: La moyenne des valeurs de ce tableau
-        :rtype: float
-    """
-    moyenne = 0
-    n = 0
-    for ligne in tableau:
-        for elt in ligne:
-            moyenne += elt
-            n += 1
-
-    if n == 0:
-        print("Tableau vide")
-        return 0
-    else:
-        return moyenne/n
-
-
 def rognerImage(tableau, x:int, y:int, largeur:int, hauteur:int, source:str, nom:str):
     """
-        Renvoie une image de taille largeur*hauteur en se basant sur le tableau tableau, 
-        la source source en commençant à la position (x,y).\n
-        Enregistre cette image sous le nom nom.tif\n
-        :param float[][] tableau: tableau de réels
-        :param int x: position x de départ
-        :param int y: position y de départ
-        :param int largeur: largeur de la nouvelle image
-        :param int hauteur: hauteur de la nouvelle image
-        :param str source: lien de la source
-        :param str nom: chemin de l'image téléchargée
-        :returns: image rognée
-        :rtype: float[][]
+    Extrait une zone rectangulaire d'un tableau 2D et l'enregistre au format TIFF.
+
+    La zone extraite commence aux coordonnées ``(x, y)`` et possède les
+    dimensions indiquées par ``largeur`` et ``hauteur``.
+
+    :param float[][] tableau: Tableau 2D représentant l'image source.
+    :param int x: Coordonnée horizontale du coin supérieur gauche de la zone.
+    :param int y: Coordonnée verticale du coin supérieur gauche de la zone.
+    :param int largeur: Largeur de la zone à extraire en pixels.
+    :param int hauteur: Hauteur de la zone à extraire en pixels.
+    :param str source: Chemin vers le fichier TIFF original servant de référence
+                       pour les métadonnées de l'image.
+    :param str nom: Nom du fichier TIFF créé dans le dossier ``image/``.
+    :returns: Tableau 2D correspondant à la zone extraite.
+    :rtype: float[][]
+    :raises ValueError: Si la zone demandée dépasse les dimensions du tableau.
     """
     hauteur_image = len(tableau)
     largeur_image = len(tableau[0])
@@ -78,10 +44,16 @@ def rognerImage(tableau, x:int, y:int, largeur:int, hauteur:int, source:str, nom
 
 def creerTif(tableau, nom:str, fichierOriginal:str):
     """
-        Permet de créer un .tif à partir d'un tableau2D de réels, du nom du .tif créé et du fichier original.\n
-        :param float[][] tableau: tableau initial
-        :param str nom: nom de l'image créée
-        :param str fichierOriginal: chemin du fichier original
+    Crée un fichier TIFF à partir d'un tableau 2D.
+
+    Le profil du fichier TIFF original est utilisé afin de conserver ses
+    métadonnées, notamment la projection, la transformation et le type de
+    données. Les dimensions sont adaptées à celles du nouveau tableau.
+
+    :param float[][] tableau: Tableau 2D contenant les données de l'image.
+    :param str nom: Nom du fichier TIFF à créer dans le dossier ``image/``.
+    :param str fichierOriginal: Chemin vers le fichier TIFF original dont le
+                                profil est utilisé comme référence.
     """
 
     tableau = np.array(tableau)
@@ -101,11 +73,12 @@ def creerTif(tableau, nom:str, fichierOriginal:str):
 
 def nbValAuDessusTab2D(val:float, tab)->int:
     """
-        Renvoie le nombre de valeur au dessus d'un seuil val dans le tableau2D tab\n
-        :param float val: valeur de seuil
-        :param float[][] tab: tableau de recherche
-        :returns: nombre de valeurs au dessus de val
-        :rtype: float
+    Compte le nombre de valeurs supérieures ou égales à un seuil dans un tableau 2D.
+
+    :param float val: Valeur seuil utilisée pour la comparaison.
+    :param float[][] tab: Tableau 2D dans lequel effectuer la recherche.
+    :returns: Nombre de valeurs supérieures ou égales au seuil.
+    :rtype: int
     """
     n = 0
     for line in tab:
@@ -117,11 +90,12 @@ def nbValAuDessusTab2D(val:float, tab)->int:
 
 def nbValEnDessousTab2D(val:float, tab)->int:
     """
-        Renvoie le nombre de valeur en dessous d'un seuil val dans le tableau2D tab\n
-        :param float val: valeur de seuil
-        :param float[][] tab: tableau de recherche
-        :returns: nombre de valeurs en dessous de val
-        :rtype: float
+    Compte le nombre de valeurs strictement inférieures à un seuil dans un tableau 2D.
+
+    :param float val: Valeur seuil utilisée pour la comparaison.
+    :param float[][] tab: Tableau 2D dans lequel effectuer la recherche.
+    :returns: Nombre de valeurs strictement inférieures au seuil.
+    :rtype: int
     """
     n = 0
     for line in tab:
@@ -133,10 +107,15 @@ def nbValEnDessousTab2D(val:float, tab)->int:
 
 def chargerEvalscript(nom:str)->str:
     """
-        Retourne un evalscript.\n
-        :param str nom: nom de l'evalscript
-        :returns: contenu de l'evalscript
-        :rtype: str
+    Charge le contenu d'un Evalscript depuis le dossier ``evalscript/``.
+
+    L'Evalscript est recherché dans un fichier portant le nom fourni et
+    possédant l'extension ``.js``.
+
+    :param str nom: Nom de l'Evalscript sans son extension.
+    :returns: Contenu textuel de l'Evalscript.
+    :rtype: str
+    :raises FileNotFoundError: Si le fichier correspondant n'existe pas.
     """
     with open(f"evalscript/{nom}.js", "r", encoding="utf-8") as f:
         return f.read()
@@ -144,9 +123,15 @@ def chargerEvalscript(nom:str)->str:
 
 def chargerRequete(fichier:str):
     """
-        Retourne une requête.\n
-        :param str nom: nom de la requete
-        :returns: contenu de la requete (json)
+    Charge une requête JSON depuis le dossier ``requetes/``.
+
+    Le contenu du fichier est désérialisé en objet Python à l'aide du module
+    :mod:`json`.
+
+    :param str fichier: Nom du fichier JSON sans son extension.
+    :returns: Données contenues dans le fichier JSON.
+    :raises FileNotFoundError: Si le fichier n'existe pas.
+    :raises json.JSONDecodeError: Si le fichier ne contient pas un JSON valide.
     """
     with open(f"requetes/{fichier}.json", "r", encoding="utf-8") as f:
         return json.load(f)
@@ -154,9 +139,12 @@ def chargerRequete(fichier:str):
 
 def telechargerImage(content:str, nom:str):
     """
-    Permet de télécharger des images au format .tif dans le dossier image/\n
-    :param float[][] content: contenu de l'image
-    :param str nom: nom de l'image
+    Enregistre le contenu binaire d'une image au format TIFF.
+
+    Le fichier est créé dans le dossier ``image/`` avec l'extension ``.tif``.
+
+    :param bytes content: Contenu binaire du fichier TIFF.
+    :param str nom: Nom du fichier sans son extension.
     """
     with open(f"image/{nom}.tif", "wb") as f:
         f.write(content)
@@ -164,8 +152,12 @@ def telechargerImage(content:str, nom:str):
 
 def supprimer_tif(dossier:str="./image"):
     """
-    Permet de supprimer tous les .tif d'un dossier.\n
-    :param str dossier=".image/": dossier
+    Supprime tous les fichiers TIFF présents dans un dossier.
+
+    Les fichiers possédant les extensions ``.tif`` et ``.tiff`` sont supprimés.
+
+    :param str dossier: Chemin du dossier dans lequel rechercher les fichiers.
+                        Par défaut, ``./image``.
     """
     dossier = Path(dossier)
 
@@ -178,9 +170,15 @@ def supprimer_tif(dossier:str="./image"):
 
 def verifierImages(img1:ImageDonnee, img2:ImageDonnee):
     """
-        Vérifie si les images 1 et 2 sont compatibles avec les méthodes de calculs de corrélation.\n
-        :param ImageDonnee img1: première image
-        :param ImageDonnee img2: deuxième image
+    Vérifie que deux images sont compatibles pour les calculs statistiques.
+
+    Les deux images doivent avoir le même effectif ainsi que les mêmes
+    dimensions spatiales.
+
+    :param ImageDonnee img1: Première image à comparer.
+    :param ImageDonnee img2: Deuxième image à comparer.
+    :raises ValueError: Si les images n'ont pas le même nombre de pixels,
+                        la même hauteur ou la même largeur.
     """
     if img1.effectif != img2.effectif:
         raise ValueError("Les images n'ont pas le même effectif")
@@ -194,12 +192,18 @@ def verifierImages(img1:ImageDonnee, img2:ImageDonnee):
 
 def condition(valeur:float, seuil:float, operateur:str)->bool:
     """
-    Renvoie vraie si la condition définie par les paramètres est vraie.\n
-    :param float valeur: valeur d'entrée de la condition
-    :param float seuil: valeur seuil de la condition
-    :param str operateur: relation d'ordre de la condition
-    :returns: vrai si la condition est respectée, faux sinon
+    Évalue une condition de comparaison entre une valeur et un seuil.
+
+    L'opérateur ``">"`` correspond dans l'implémentation à une comparaison
+    supérieure ou égale, tandis que ``"<"`` correspond à une comparaison
+    inférieure ou égale.
+
+    :param float valeur: Valeur à comparer.
+    :param float seuil: Valeur seuil de comparaison.
+    :param str operateur: Opérateur de comparaison, ``">"`` ou ``"<"``.
+    :returns: ``True`` si la condition est respectée, sinon ``False``.
     :rtype: bool
+    :raises ValueError: Si l'opérateur fourni n'est ni ``">"`` ni ``"<"``.
     """
     if operateur == ">":
         return valeur >= seuil
@@ -211,7 +215,20 @@ def condition(valeur:float, seuil:float, operateur:str)->bool:
 
 
 def correlation(img1, img2):
+    """
+    Calcule le coefficient de corrélation linéaire entre deux images.
 
+    Chaque pixel de la première image est associé au pixel situé aux mêmes
+    coordonnées dans la seconde image. Le coefficient obtenu correspond à la
+    covariance normalisée par les écarts-types des deux images.
+
+    :param ImageDonnee img1: Première image utilisée pour le calcul.
+    :param ImageDonnee img2: Deuxième image utilisée pour le calcul.
+    :returns: Coefficient de corrélation entre les deux images.
+    :rtype: float
+    :raises ValueError: Si les images sont incompatibles ou si l'une des deux
+                        images possède un écart-type nul.
+    """
     verifierImages(img1, img2)
 
     if img1.ecart_type == 0 or img2.ecart_type == 0:
@@ -235,7 +252,27 @@ def correlation(img1, img2):
 def confiance(img1, img2,
                seuil1, seuil2,
                operateur1, operateur2):
+    """
+    Calcule la confiance d'une règle d'association entre deux images.
 
+    La règle est définie par une condition A appliquée à ``img1`` et une
+    condition B appliquée à ``img2``.
+
+    La confiance correspond à la probabilité conditionnelle :
+
+        confiance(A -> B) = P(A ∩ B) / P(A)
+
+    :param ImageDonnee img1: Image utilisée pour définir l'antécédent A.
+    :param ImageDonnee img2: Image utilisée pour définir le conséquent B.
+    :param float seuil1: Seuil utilisé pour la condition sur ``img1``.
+    :param float seuil2: Seuil utilisé pour la condition sur ``img2``.
+    :param str operateur1: Opérateur de comparaison de la première condition.
+    :param str operateur2: Opérateur de comparaison de la seconde condition.
+    :returns: Confiance de la règle A -> B, comprise entre 0 et 1.
+    :rtype: float
+    :raises ValueError: Si les images sont incompatibles, si aucun pixel ne
+                        respecte A ou si un opérateur est invalide.
+    """
     verifierImages(img1, img2)
 
     antecedent = 0
@@ -271,7 +308,27 @@ def confiance(img1, img2,
 def lift(img1, img2,
          seuil1, seuil2,
          operateur1, operateur2):
+    """
+    Calcule le lift d'une règle d'association entre deux images.
 
+    Le lift mesure dans quelle mesure la présence du conséquent B est associée
+    à la présence de l'antécédent A. Il est calculé selon :
+
+        lift(A -> B) = confiance(A -> B) / P(B)
+
+    Une valeur supérieure à 1 indique une association positive entre A et B.
+
+    :param ImageDonnee img1: Image utilisée pour définir l'antécédent A.
+    :param ImageDonnee img2: Image utilisée pour définir le conséquent B.
+    :param float seuil1: Seuil utilisé pour la condition sur ``img1``.
+    :param float seuil2: Seuil utilisé pour la condition sur ``img2``.
+    :param str operateur1: Opérateur de comparaison de la première condition.
+    :param str operateur2: Opérateur de comparaison de la seconde condition.
+    :returns: Lift de la règle A -> B.
+    :rtype: float
+    :raises ValueError: Si les images sont incompatibles, si A ou B est absent,
+                        ou si un opérateur est invalide.
+    """
     verifierImages(img1, img2)
 
     antecedent = 0
@@ -315,9 +372,26 @@ def lift(img1, img2,
 
 
 class ResultatRegle:
+    """
+    Stocke les résultats statistiques d'une règle d'association.
+
+    Cette classe regroupe les principales mesures calculées pour une règle :
+    support, confiance et lift, ainsi que les effectifs nécessaires à leur
+    interprétation.
+    """
     def __init__(self, support, confiance, lift,
                  nb_A, nb_B, nb_AB, effectif):
+        """
+        Initialise les résultats d'une règle d'association.
 
+        :param float support: Proportion de pixels vérifiant simultanément A et B.
+        :param float confiance: Probabilité de B sachant A.
+        :param float lift: Mesure d'association entre A et B.
+        :param int nb_A: Nombre de pixels vérifiant la condition A.
+        :param int nb_B: Nombre de pixels vérifiant la condition B.
+        :param int nb_AB: Nombre de pixels vérifiant simultanément A et B.
+        :param int effectif: Nombre total de pixels étudiés.
+        """
         self.support = support
         self.confiance = confiance
         self.lift = lift
@@ -329,7 +403,17 @@ class ResultatRegle:
 
 
 def verifierDeuxTableaux(tab1, tab2):
+    """
+    Vérifie que deux tableaux 2D peuvent être comparés pixel par pixel.
 
+    Les tableaux doivent être non nuls, non vides et posséder les mêmes
+    dimensions.
+
+    :param float[][] tab1: Premier tableau 2D.
+    :param float[][] tab2: Deuxième tableau 2D.
+    :raises ValueError: Si un tableau est nul, vide ou possède des dimensions
+                        différentes de l'autre.
+    """
     if tab1 is None or tab2 is None:
         raise ValueError("Tableau nul")
 
@@ -347,7 +431,29 @@ def calculerRegle(tab1, tab2,
                   seuil1, seuil2,
                   operateur1="<",
                   operateur2=">"):
+    """
+    Calcule une règle d'association entre deux tableaux 2D.
 
+    Chaque pixel du premier tableau définit l'antécédent A et chaque pixel
+    correspondant du second tableau définit le conséquent B.
+
+    Les trois indicateurs suivants sont calculés :
+
+    - le support : proportion de pixels vérifiant A et B ;
+    - la confiance : proportion des pixels vérifiant B parmi ceux vérifiant A ;
+    - le lift : rapport entre la confiance et la probabilité de B.
+
+    :param float[][] tab1: Premier tableau 2D utilisé pour définir A.
+    :param float[][] tab2: Deuxième tableau 2D utilisé pour définir B.
+    :param float seuil1: Seuil utilisé pour la condition A.
+    :param float seuil2: Seuil utilisé pour la condition B.
+    :param str operateur1: Opérateur de comparaison de A, ``"<"`` ou ``">"``.
+    :param str operateur2: Opérateur de comparaison de B, ``"<"`` ou ``">"``.
+    :returns: Objet contenant les résultats de la règle d'association.
+    :rtype: ResultatRegle
+    :raises ValueError: Si les tableaux sont incompatibles, si A ou B est
+                        absent ou si un opérateur est invalide.
+    """
     verifierDeuxTableaux(tab1, tab2)
 
     effectif = len(tab1) * len(tab1[0])
@@ -418,7 +524,24 @@ def calculerRegle(tab1, tab2,
 
 
 def regressionLineaire(tabX, tabY):
+    """
+    Calcule les coefficients d'une régression linéaire entre deux tableaux 2D.
 
+    Les valeurs des deux tableaux sont aplaties puis considérées comme des
+    couples de données (X, Y). La droite obtenue est de la forme :
+
+        Y = aX + b
+
+    où ``a`` est le coefficient directeur et ``b`` l'ordonnée à l'origine.
+
+    :param float[][] tabX: Tableau 2D contenant les variables explicatives X.
+    :param float[][] tabY: Tableau 2D contenant les variables expliquées Y.
+    :returns: Tuple contenant le coefficient directeur ``a`` et l'ordonnée à
+              l'origine ``b``.
+    :rtype: tuple[float, float]
+    :raises ValueError: Si les tableaux sont incompatibles, contiennent moins
+                        de deux valeurs ou si les valeurs de X sont constantes.
+    """
     verifierDeuxTableaux(tabX, tabY)
 
 
@@ -472,7 +595,24 @@ def regressionLineaire(tabX, tabY):
 
 
 def genererRegressionPNG(tabX, tabY, fichier):
+    """
+    Génère un graphique PNG représentant une régression linéaire.
 
+    Les couples de valeurs sont représentés sous forme de nuage de points et
+    la droite de régression linéaire est superposée.
+
+    Le graphique est enregistré dans le dossier
+    ``output/regression/``.
+
+    Dans le contexte du projet, l'axe X représente le NDVI et l'axe Y la
+    température de surface terrestre (LST).
+
+    :param float[][] tabX: Tableau 2D contenant les valeurs du NDVI.
+    :param float[][] tabY: Tableau 2D contenant les valeurs de LST.
+    :param str fichier: Nom du fichier PNG à générer.
+    :raises ValueError: Si les tableaux sont incompatibles ou si la régression
+                        linéaire ne peut pas être calculée.
+    """
     verifierDeuxTableaux(tabX, tabY)
 
     x = []
