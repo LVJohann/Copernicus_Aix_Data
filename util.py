@@ -1,13 +1,19 @@
-import math
 import rasterio
 import numpy as np
 from pathlib import Path
 import matplotlib.pyplot as plt
 import json
 
+from ImageCop import ImageDonnee
 
 
-def moyenneAri1D(tableau):
+def moyenneAri1D(tableau)->float:
+    """
+        Renvoie la moyenne des valeurs du tableau 1D passé en entrée.\n
+        :param float[] tableau: tableau 1D de réels
+        :returns: La moyenne des valeurs de ce tableau
+        :rtype: float
+    """
     somme = 0
     n = 0
 
@@ -17,7 +23,14 @@ def moyenneAri1D(tableau):
 
     return somme/n if n else 0    
 
+
 def moyenneAri2D(tableau)->float:
+    """
+        Renvoie la moyenne des valeurs du tableau 2D passé en entrée.\n
+        :param float[][] tableau: tableau 2D de réels
+        :returns: La moyenne des valeurs de ce tableau
+        :rtype: float
+    """
     moyenne = 0
     n = 0
     for ligne in tableau:
@@ -32,8 +45,21 @@ def moyenneAri2D(tableau)->float:
         return moyenne/n
 
 
-def rognerImage(tableau, x, y, largeur, hauteur, source, nom):
-
+def rognerImage(tableau, x:int, y:int, largeur:int, hauteur:int, source:str, nom:str):
+    """
+        Renvoie une image de taille largeur*hauteur en se basant sur le tableau tableau, 
+        la source source en commençant à la position (x,y).\n
+        Enregistre cette image sous le nom nom.tif\n
+        :param float[][] tableau: tableau de réels
+        :param int x: position x de départ
+        :param int y: position y de départ
+        :param int largeur: largeur de la nouvelle image
+        :param int hauteur: hauteur de la nouvelle image
+        :param str source: lien de la source
+        :param str nom: chemin de l'image téléchargée
+        :returns: image rognée
+        :rtype: float[][]
+    """
     hauteur_image = len(tableau)
     largeur_image = len(tableau[0])
 
@@ -50,7 +76,13 @@ def rognerImage(tableau, x, y, largeur, hauteur, source, nom):
     return resultat
 
 
-def creerTif(tableau, nom, fichierOriginal):
+def creerTif(tableau, nom:str, fichierOriginal:str):
+    """
+        Permet de créer un .tif à partir d'un tableau2D de réels, du nom du .tif créé et du fichier original.\n
+        :param float[][] tableau: tableau initial
+        :param str nom: nom de l'image créée
+        :param str fichierOriginal: chemin du fichier original
+    """
 
     tableau = np.array(tableau)
 
@@ -66,7 +98,15 @@ def creerTif(tableau, nom, fichierOriginal):
         with rasterio.open("image/" + nom + ".tif", "w", **profil) as dst:
             dst.write(tableau, 1)
 
-def nbValAuDessusTab2D(val, tab):
+
+def nbValAuDessusTab2D(val:float, tab)->int:
+    """
+        Renvoie le nombre de valeur au dessus d'un seuil val dans le tableau2D tab\n
+        :param float val: valeur de seuil
+        :param float[][] tab: tableau de recherche
+        :returns: nombre de valeurs au dessus de val
+        :rtype: float
+    """
     n = 0
     for line in tab:
         for elt in line:
@@ -74,7 +114,15 @@ def nbValAuDessusTab2D(val, tab):
                 n += 1
     return n
 
-def nbValEnDessousTab2D(val, tab):
+
+def nbValEnDessousTab2D(val:float, tab)->int:
+    """
+        Renvoie le nombre de valeur en dessous d'un seuil val dans le tableau2D tab\n
+        :param float val: valeur de seuil
+        :param float[][] tab: tableau de recherche
+        :returns: nombre de valeurs en dessous de val
+        :rtype: float
+    """
     n = 0
     for line in tab:
         for elt in line:
@@ -82,34 +130,43 @@ def nbValEnDessousTab2D(val, tab):
                 n += 1
     return n
 
-def ecartTypeTab2D(tab):
-    M = moyenneAri2D(tab)
-    N = len(tab)*len(tab[0])
 
-    Var = 0
-    for line in tab:
-        for elt in line:
-            var += (elt - M)**2
-    var /= N
-    if var < 0:
-        raise ValueError("Variance négative")
-
-    return math.sqrt(var)
-
-def chargerEvalscript(nom):
+def chargerEvalscript(nom:str)->str:
+    """
+        Retourne un evalscript.\n
+        :param str nom: nom de l'evalscript
+        :returns: contenu de l'evalscript
+        :rtype: str
+    """
     with open(f"evalscript/{nom}.js", "r", encoding="utf-8") as f:
         return f.read()
-    
-def chargerRequete(fichier):
+
+
+def chargerRequete(fichier:str):
+    """
+        Retourne une requête.\n
+        :param str nom: nom de la requete
+        :returns: contenu de la requete (json)
+    """
     with open(f"requetes/{fichier}.json", "r", encoding="utf-8") as f:
         return json.load(f)
 
-def telechargerImage(content, nom):
+
+def telechargerImage(content:str, nom:str):
+    """
+    Permet de télécharger des images au format .tif dans le dossier image/\n
+    :param float[][] content: contenu de l'image
+    :param str nom: nom de l'image
+    """
     with open(f"image/{nom}.tif", "wb") as f:
         f.write(content)
 
 
-def supprimer_tif(dossier="./image"):
+def supprimer_tif(dossier:str="./image"):
+    """
+    Permet de supprimer tous les .tif d'un dossier.\n
+    :param str dossier=".image/": dossier
+    """
     dossier = Path(dossier)
 
     for fichier in dossier.glob("*.tif"):
@@ -119,8 +176,12 @@ def supprimer_tif(dossier="./image"):
         fichier.unlink()
 
 
-
-def verifierImages(img1, img2):
+def verifierImages(img1:ImageDonnee, img2:ImageDonnee):
+    """
+        Vérifie si les images 1 et 2 sont compatibles avec les méthodes de calculs de corrélation.\n
+        :param ImageDonnee img1: première image
+        :param ImageDonnee img2: deuxième image
+    """
     if img1.effectif != img2.effectif:
         raise ValueError("Les images n'ont pas le même effectif")
 
@@ -131,7 +192,15 @@ def verifierImages(img1, img2):
         raise ValueError("Les images n'ont pas la même largeur")
 
 
-def condition(valeur, seuil, operateur):
+def condition(valeur:float, seuil:float, operateur:str)->bool:
+    """
+    Renvoie vraie si la condition définie par les paramètres est vraie.\n
+    :param float valeur: valeur d'entrée de la condition
+    :param float seuil: valeur seuil de la condition
+    :param str operateur: relation d'ordre de la condition
+    :returns: vrai si la condition est respectée, faux sinon
+    :rtype: bool
+    """
     if operateur == ">":
         return valeur >= seuil
 
@@ -139,6 +208,7 @@ def condition(valeur, seuil, operateur):
         return valeur <= seuil
 
     raise ValueError("Opérateur invalide ('<' ou '>')")
+
 
 def correlation(img1, img2):
 
@@ -160,7 +230,6 @@ def correlation(img1, img2):
     covariance /= img1.effectif
 
     return covariance / (img1.ecart_type * img2.ecart_type)
-
 
 
 def confiance(img1, img2,
@@ -258,6 +327,7 @@ class ResultatRegle:
         self.nb_AB = nb_AB
         self.effectif = effectif
 
+
 def verifierDeuxTableaux(tab1, tab2):
 
     if tab1 is None or tab2 is None:
@@ -271,6 +341,7 @@ def verifierDeuxTableaux(tab1, tab2):
 
     if len(tab1[0]) != len(tab2[0]):
         raise ValueError("Largeurs différentes")
+
 
 def calculerRegle(tab1, tab2,
                   seuil1, seuil2,
@@ -398,6 +469,7 @@ def regressionLineaire(tabX, tabY):
 
 
     return a, b
+
 
 def genererRegressionPNG(tabX, tabY, fichier):
 

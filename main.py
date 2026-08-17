@@ -3,7 +3,7 @@ import numpy as np
 import json
 import rasterio
 import os
-import Image as img
+import ImageCop as img
 import requests
 import time
 import util
@@ -14,8 +14,9 @@ import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning) 
 #==========INITIALISATION==========
 debut = time.time()
-clear = lambda: os.system('cls')
-clear()
+
+#clear = lambda: os.system('cls')
+#clear()
 load_dotenv()
 
 
@@ -23,7 +24,7 @@ DOSSIER = "./image"
 
 util.supprimer_tif(DOSSIER)
 
-#==========VARIABLES==========
+#==========VARIABLES GLOBALES==========
 source = "NDVI.tif"
 session = requests.Session()
 
@@ -45,12 +46,12 @@ TOKEN_FILE="token.json"
 etape("Récupération du Token")
 
  # Vérifier si un token existe déjà
+newToken = False
 if os.path.exists(TOKEN_FILE):
-    newToken = False
     with open(TOKEN_FILE, "r") as f:
         data = json.load(f)
 
-    # marge de sécurité de 60 secondes
+    # Marge de sécurité de 60 secondes
     if data["expires_at"] > time.time() + 60:
         TOKEN = data["access_token"]
     else:
@@ -91,24 +92,33 @@ HEADER={
     "Content-Type" : "application/json",
     "Accept" : "image/tiff"
 }
-session.headers.update(HEADER)
 URL_GET_IMAGE="https://sh.dataspace.copernicus.eu/api/v1/process"
 
+SCRIPT_NAME_NDVI = "ndviSent3"
+REQUEST_NAME_NDVI = "ndviSent3"
+
+SCRIPT_NAME_LST = "lstSent3"
+REQUEST_NAME_LST = "lstSent3"
+
+evalscript_ndvi = util.chargerEvalscript(SCRIPT_NAME_NDVI)
+evalscript_lst = util.chargerEvalscript(SCRIPT_NAME_LST)
+
+session.headers.update(HEADER)
+
 # NDVI
-SCRIPT_NAME = "ndviSent3"
-evalscript = util.chargerEvalscript(SCRIPT_NAME)
-REQUEST_NAME = "ndviSent3"
-NDVI_BODY=util.chargerRequete(REQUEST_NAME)
-NDVI_BODY["evalscript"] = evalscript
+NDVI_BODY=util.chargerRequete(REQUEST_NAME_NDVI)
+NDVI_BODY["evalscript"] = evalscript_ndvi
 
 etape("Récupération du TIF NDVI sur Aix")
 
+# LANCEMENT DE LA REQUETE
 response = session.post(
     URL_GET_IMAGE, 
     json=NDVI_BODY,
     timeout=300
 )
 
+#VERIFICATION DE LA REPONSE
 if response.status_code != 200:
     erreur()
     print("Erreur: Code ", response.status_code)
@@ -121,19 +131,19 @@ ok()
 
 
 # LST
-SCRIPT_NAME = "lstSent3"
-evalscript=util.chargerEvalscript(SCRIPT_NAME)
-REQUEST_NAME = "lstSent3"
-LST_BODY = util.chargerRequete(REQUEST_NAME)
-LST_BODY["evalscript"] = evalscript
+LST_BODY = util.chargerRequete(REQUEST_NAME_LST)
+LST_BODY["evalscript"] = evalscript_lst
 
 etape("Récupération du TIF LST sur Aix")
 
+# LANCEMENT DE LA REQUETE
 response = session.post(
     URL_GET_IMAGE, 
     json=LST_BODY,
     timeout=20
 )
+
+#VERIFICATION DE LA REPONSE
 if response.status_code != 200:
     erreur()
     print("Erreur: Code ", response.status_code)
@@ -150,10 +160,8 @@ ok()
 #==========TELECHARGEMENT IMAGE RESULTAT==========
 etape("Téléchargement des images")
 
-if not os.path.exists("image/NDVI.tif"):
-    util.telechargerImage(ndvi, "NDVI")
-if not os.path.exists("image/LST.tif"):
-    util.telechargerImage(lst, "LST")
+util.telechargerImage(ndvi, "NDVI")
+util.telechargerImage(lst, "LST")
 
 ok()
 
@@ -161,6 +169,7 @@ ok()
 
 
 #==========TRAITEMENT DE LA DONNEE==========
+#TRAITEMENT SELON LES DIFFERENTS QUARTIERS D'AIX
 data = []
 etape("Récupération de l'image NDVI")
 
@@ -172,6 +181,13 @@ ok()
 name = "AIX"
 etape(f"Traitement des données NDVI à {name}")
 
+#VALEURS DE x, y, width ET height PAR RAPPORT A L'IMAGE ORIGINALE POUR TOUS LES QUARTIERS:
+# "bbox": [
+#   5.30,
+#   43.45,
+#   5.55,
+#   43.60
+#]
 x = 400
 y = 400
 width = 750-x
@@ -224,6 +240,7 @@ data.append(centreHistorique)
 
 ok()
 
+#IDEM POUR LES LST
 
 etape("Récupération de l'image LST...")
 
@@ -288,6 +305,7 @@ data.append(centreHistorique)
 ok()
 
 
+# REGROUPEMENT DES DONNEES DANS UN DICTIONNAIRE
 DATA = {
     "Aix_Global" : AIX,
     "Torse" : TORSE,
@@ -328,6 +346,7 @@ if reponse.upper() == "Y":
     ]
     SEUILS_LST = [30, 32, 34, 36, 38, 40, 42]
 
+    # DIFFERENTES VALEURS DE CORRELATION SELON LES VALEURS SEUILS
     for seuil_ndvi in SEUILS_NDVI:
 
         for seuil_lst in SEUILS_LST:
@@ -371,6 +390,8 @@ if reponse.upper() == "Y":
                     )
 
 
+#==========GRAPHIQUES==========
+# AFFICHAGE DE LA COURBE DE TENDANCE DE LST EN FONCTION DE NDVI
 reponse = ""
 reponse = input("Voulez-vous générer des courbes de tendance ? [Y/n]")
 if reponse.upper() == "Y":
@@ -384,6 +405,7 @@ if reponse.upper() == "Y":
 
         ok()
 
+# AFFICHAGE DU NUAGE DE POINTS GLOBAL DE LST EN FONTION DE NDVI
 reponse = ""
 reponse = input("Voulez-vous afficher le nuage de points global ? [Y/n]")
 if reponse.upper() == "Y":
@@ -410,4 +432,6 @@ if reponse.upper() == "Y":
     ok()
 
 
+# FERMETURE DE LA SESSION ET FIN DU PROGRAMME
+session.close()
 print("Exécution terminée, temps total: ", time.time()-debut, " secondes.")
