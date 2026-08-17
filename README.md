@@ -48,7 +48,7 @@ Copernicus_Aix_Data/
 │   └── ndviSent3.json
 │
 ├── image/
-│   └── .keep
+│
 │
 ├── output/
 │   ├── image/
