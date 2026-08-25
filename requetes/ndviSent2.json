@@ -14,7 +14,7 @@
             "dataFilter": {
             "timeRange": {
                 "from": "2024-06-01T00:00:00Z",
-                "to": "2024-06-10T23:59:59Z"
+                "to": "2024-06-07T23:59:59Z"
             },
             "mosaickingOrder":"leastCC"
             }
